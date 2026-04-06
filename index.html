@@ -382,7 +382,7 @@ function callAPI(msgs, sys, cb){
   if(sys) allMsgs.push({role:'system',content:sys});
   msgs.forEach(function(m){ allMsgs.push(m); });
   var url='https://openrouter.ai/api/v1/chat/completions';
-  var body={model:'mistralai/mistral-small-3.1-24b-instruct:free',messages:allMsgs,max_tokens:1000};
+  var body={model:'deepseek/deepseek-chat-v3-0324:free',messages:allMsgs,max_tokens:1000};
   var reqBody=JSON.stringify(body);
   var headers=new Headers();
   headers.append('Content-Type','application/json');
