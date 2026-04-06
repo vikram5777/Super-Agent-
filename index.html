@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Agent</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f5c842">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Super Agent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080810;--sur:#10101c;--card:#16162a;--bdr:#24243a;--gold:#f5c842;--g2:#e0a020;--txt:#e8e8f5;--mut:#6868a0;--grn:#30d080;--red:#f04060;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-height:100vh;}
+header{text-align:center;padding:24px 16px 16px;border-bottom:1px solid var(--bdr);position:sticky;top:0;background:rgba(8,8,16,0.96);backdrop-filter:blur(10px);z-index:100;}
+header h1{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--gold);}
+header p{color:var(--mut);font-size:0.78rem;margin-top:4px;}
+.vbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:10px 14px;display:flex;gap:8px;align-items:center;}
+.mic{width:42px;height:42px;border-radius:50%;border:2px solid var(--gold);background:transparent;color:var(--gold);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mic.on{border-color:var(--red);color:var(--red);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(240,64,96,0.4);}50%{box-shadow:0 0 0 8px rgba(240,64,96,0);}}
+.vtxt{flex:1;background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;color:var(--mut);font-size:0.8rem;font-style:italic;min-height:40px;display:flex;align-items:center;}
+.vtxt.on{color:var(--txt);font-style:normal;}
+.vgo{background:linear-gradient(135deg,var(--g2),#ff8010);border:none;border-radius:10px;padding:10px 14px;color:#080810;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;flex-shrink:0;}
+.vgo:disabled{opacity:0.4;cursor:not-allowed;}
+.vstatus{text-align:center;font-size:0.72rem;color:var(--mut);padding:4px;min-height:20px;}
+.vstatus.on{color:var(--gold);}
+.vstatus.er{color:var(--red);}
+.nav{overflow-x:auto;white-space:nowrap;padding:12px 10px;background:var(--sur);border-bottom:1px solid var(--bdr);scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nb{display:inline-flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:8px 10px;color:var(--mut);font-family:'DM Sans',sans-serif;font-size:0.68rem;font-weight:500;cursor:pointer;margin-right:6px;min-width:56px;}
+.nb .ic{font-size:1.1rem;}
+.nb.on{background:linear-gradient(135deg,#201800,#180e00);border-color:var(--gold);color:var(--gold);}
+.main{max-width:720px;margin:0 auto;padding:16px 12px 60px;}
+.sec{display:none;}
+.sec.on{display:block;}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:18px;margin-bottom:12px;}
+.ct{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;color:var(--gold);margin-bottom:14px;}
+label{display:block;font-size:0.72rem;font-weight:600;color:var(--mut);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
+input,textarea,select{width:100%;background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:0.86rem;margin-bottom:10px;outline:none;-webkit-appearance:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--g2);}
+textarea{resize:vertical;min-height:70px;}
+select option{background:var(--sur);}
+.fr{display:flex;gap:6px;align-items:flex-start;}
+.fr textarea,.fr input{flex:1;}
+.fm{width:32px;height:32px;border-radius:50%;border:1px solid var(--bdr);background:var(--sur);color:var(--mut);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.85rem;margin-top:2px;}
+.fm.on{border-color:var(--red);color:var(--red);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.btn{width:100%;background:linear-gradient(135deg,var(--g2),#ff8010);border:none;border-radius:10px;padding:12px;color:#080810;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.res{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:14px;margin-top:12px;display:none;}
+.res.on{display:block;}
+.rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.rl{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--grn);font-weight:600;}
+.cp{background:var(--card);border:1px solid var(--bdr);color:var(--mut);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.74rem;font-family:'DM Sans',sans-serif;}
+.rt{color:var(--txt);font-size:0.84rem;line-height:1.75;white-space:pre-wrap;word-break:break-word;}
+.ld{display:none;text-align:center;padding:20px;color:var(--mut);font-size:0.84rem;}
+.ld.on{display:block;}
+.dots{display:inline-flex;gap:4px;margin-top:6px;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:bo 1.2s infinite;}
+.dot:nth-child(2){animation-delay:0.2s;}
+.dot:nth-child(3){animation-delay:0.4s;}
+@keyframes bo{0%,80%,100%{transform:scale(0.5);opacity:0.3;}40%{transform:scale(1);opacity:1;}}
+.er{color:var(--red);font-size:0.78rem;margin-top:6px;text-align:center;}
+.cbox{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;height:300px;overflow-y:auto;padding:12px;margin-bottom:10px;}
+.msg{margin-bottom:10px;display:flex;gap:6px;}
+.msg.u{flex-direction:row-reverse;}
+.mb{max-width:82%;padding:9px 13px;border-radius:12px;font-size:0.84rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.msg.ai .mb{background:var(--card);border:1px solid var(--bdr);color:var(--txt);}
+.msg.u .mb{background:linear-gradient(135deg,#201800,#1a1005);border:1px solid var(--g2);color:var(--gold);}
+.av{width:26px;height:26px;border-radius:50%;background:var(--bdr);display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;}
+.cir{display:flex;gap:6px;}
+.cir input{margin-bottom:0;flex:1;}
+.cs{background:var(--g2);border:none;border-radius:8px;padding:10px 14px;color:#080810;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;flex-shrink:0;}
+.invp{background:#fff;color:#111;border-radius:10px;padding:18px;margin-top:12px;display:none;font-size:12px;}
+.invp.on{display:block;}
+.ti{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.tin{font-weight:600;font-size:0.86rem;}
+.tid{font-size:0.74rem;color:var(--mut);margin-top:2px;}
+.tbdg{font-size:0.7rem;font-weight:600;padding:3px 9px;border-radius:20px;}
+.tbdg.p{background:rgba(245,200,66,0.15);color:var(--gold);}
+.tbdg.ok{background:rgba(48,208,128,0.15);color:var(--grn);}
+.tbdg.d{background:rgba(240,64,96,0.15);color:var(--red);}
+.td{background:none;border:none;color:var(--mut);cursor:pointer;font-size:0.95rem;padding:4px;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--grn);color:#080810;padding:8px 18px;border-radius:30px;font-weight:700;font-size:0.8rem;transition:transform 0.3s;z-index:9999;}
+.toast.on{transform:translateX(-50%) translateY(0);}
+.tip{background:rgba(245,200,66,0.06);border:1px solid rgba(245,200,66,0.2);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:0.78rem;color:var(--gold);line-height:1.6;}
+#ko{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.97);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+#ko.on{display:flex;}
+.kb{max-width:400px;width:100%;text-align:center;}
+.kt{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--gold);margin-bottom:8px;}
+.ki2{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:16px;text-align:left;}
+.ki2 p{color:var(--txt);font-size:0.8rem;line-height:1.9;}
+.ki2 a{color:#4090ff;}
+</style>
+</head>
+<body>
+
+<div id="ko">
+  <div class="kb">
+    <div style="font-size:2.5rem;margin-bottom:12px">&#128273;</div>
+    <div class="kt">API Key Setup</div>
+    <div style="color:var(--mut);font-size:0.82rem;margin-bottom:20px;line-height:1.6">Ek baar key daalo — sab features kaam karenge!</div>
+    <div class="ki2">
+      <p>1. <a href="https://openrouter.ai" target="_blank">openrouter.ai</a> kholo<br>
+      2. Login karo (Google se)<br>
+      3. <b style="color:var(--gold)">API Keys</b> &#8594; Create Key<br>
+      4. Key copy karo (sk-or-... se shuru hogi)<br>
+      5. Yahan paste karo</p>
+    </div>
+    <input type="password" id="kiv" placeholder="sk-ant-api03-..." style="margin-bottom:10px;">
+    <button class="btn" onclick="doSaveKey()">&#10003; Save Karo &amp; Shuru Karo</button>
+    <p style="color:var(--mut);font-size:0.72rem;margin-top:10px">&#128274; Key sirf is device mein save hoti hai</p>
+  </div>
+</div>
+
+<header>
+  <h1>&#9889; Super Agent</h1>
+  <p>Tumhara Complete AI Assistant</p>
+</header>
+
+<div class="vbar">
+  <button class="mic" id="gmic" onclick="toggleMic()">&#127908;</button>
+  <div class="vtxt" id="vtxt">Bolkar kaam karwao...</div>
+  <button class="vgo" id="vgo" disabled onclick="runVoice()">&#9889; Karo</button>
+</div>
+<div class="vstatus" id="vs"></div>
+
+<div class="nav">
+  <button class="nb on" onclick="go('chat',this)"><span class="ic">&#129302;</span>AI Chat</button>
+  <button class="nb" onclick="go('email',this)"><span class="ic">&#128231;</span>Email</button>
+  <button class="nb" onclick="go('invoice',this)"><span class="ic">&#129534;</span>Invoice</button>
+  <button class="nb" onclick="go('wa',this)"><span class="ic">&#128172;</span>WhatsApp</button>
+  <button class="nb" onclick="go('yt',this)"><span class="ic">&#128250;</span>YouTube</button>
+  <button class="nb" onclick="go('res',this)"><span class="ic">&#128196;</span>Resume</button>
+  <button class="nb" onclick="go('trk',this)"><span class="ic">&#128202;</span>Tracker</button>
+</div>
+
+<div class="main">
+
+<div id="chat" class="sec on">
+  <div class="card">
+    <div class="ct">&#129302; Hindi AI Chatbot</div>
+    <div class="tip">&#128161; Koi bhi sawaal poochho — Hindi, Hinglish ya English mein!</div>
+    <div class="cbox" id="cb">
+      <div class="msg ai"><div class="av">&#129302;</div><div class="mb">Namaskar! &#128591; Kya help chahiye? Career, business, YouTube, jyotish — kuch bhi poochho!</div></div>
+    </div>
+    <div class="cir">
+      <input type="text" id="ci" placeholder="Kuch bhi poochho..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="fm" id="cmic" onclick="fmic('ci',this)">&#127908;</button>
+      <button class="cs" onclick="sendMsg()">&#9658;</button>
+    </div>
+  </div>
+</div>
+
+<div id="email" class="sec">
+  <div class="card">
+    <div class="ct">&#128231; Email Generator</div>
+    <label>Type</label>
+    <select id="et">
+      <option value="job application">Job Application</option>
+      <option value="payment reminder">Payment Reminder</option>
+      <option value="follow up">Follow Up</option>
+      <option value="complaint">Complaint</option>
+      <option value="thank you">Thank You</option>
+      <option value="self introduction">Self Introduction</option>
+      <option value="custom">Custom</option>
+    </select>
+    <div class="g2">
+      <div><label>Apna Naam</label><input type="text" id="esn" placeholder="Tumhara naam"></div>
+      <div><label>Receiver</label><input type="text" id="ern" placeholder="Kisko bhej rahe ho"></div>
+    </div>
+    <label>Kya likhna hai?</label>
+    <div class="fr"><textarea id="ectx" placeholder="Bolkar ya likhkar batao..."></textarea><button class="fm" onclick="fmic('ectx',this)">&#127908;</button></div>
+    <label>Tone</label>
+    <select id="eton">
+      <option value="professional">Professional</option>
+      <option value="friendly">Friendly</option>
+      <option value="formal">Formal</option>
+      <option value="urgent">Urgent</option>
+    </select>
+    <button class="btn" id="ebtn" onclick="genEmail()">&#10024; Email Banao</button>
+  </div>
+  <div class="ld" id="eld"><div>Likh raha hoon...</div><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div class="res" id="eres"><div class="rh"><span class="rl">&#10003; Ready</span><button class="cp" onclick="cpText('eout',this)">Copy</button></div><div class="rt" id="eout"></div></div>
+  <div class="er" id="eerr"></div>
+</div>
+
+<div id="invoice" class="sec">
+  <div class="card">
+    <div class="ct">&#127970; Company Setup</div>
+    <div class="tip">&#128161; Ek baar bharo — save ho jayega!</div>
+    <label>Company Naam</label><input type="text" id="ico" placeholder="Manya Air Conditioning">
+    <label>Specialist In</label><input type="text" id="isp" placeholder="HVAC-Chiller Sales and Maintenance">
+    <div class="g2">
+      <div><label>Apna GST No.</label><input type="text" id="igst" placeholder="23FSEPP7746B1ZP"></div>
+      <div><label>Phone</label><input type="text" id="iph" placeholder="+91-8629910895"></div>
+    </div>
+    <label>Email</label><input type="text" id="iem" placeholder="company@gmail.com">
+    <label>Address</label><textarea id="iad" placeholder="4-5 Pushpdeep Colony, Indore" style="min-height:55px"></textarea>
+    <label>Logo (optional)</label><input type="file" id="ilg" accept="image/*" style="color:var(--mut);font-size:0.8rem;">
+    <label>Terms &amp; Conditions</label><textarea id="itc" placeholder="1. 100% Advance&#10;2. GST Extra&#10;3. Transport Extra" style="min-height:100px;height:auto;"></textarea>
+    <button class="btn" onclick="saveCo()" style="margin-bottom:8px">&#128190; Save Karo</button>
+  </div>
+  <div class="card">
+    <div class="ct">&#128203; Invoice Details</div>
+    <div class="g2">
+      <div><label>Invoice No.</label><input type="text" id="ino" placeholder="INV-001"></div>
+      <div><label>Date</label><input type="date" id="idt"></div>
+    </div>
+    <label>PO Number</label><input type="text" id="ipo" placeholder="Optional">
+    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:10px;">
+      <div style="color:var(--gold);font-size:0.78rem;font-weight:600;margin-bottom:8px">&#128100; Client</div>
+      <label>Client Naam</label><input type="text" id="icn" placeholder="Prataap Snacks Ltd.">
+      <label>Client Address</label><textarea id="ica" placeholder="Client ka address" style="min-height:50px"></textarea>
+      <label>Client GST No.</label><input type="text" id="icg" placeholder="Optional">
+    </div>
+    <label>Items</label>
+    <div style="overflow-x:auto;">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 30px;gap:5px;min-width:300px;margin-bottom:5px;">
+        <div style="font-size:0.68rem;color:var(--mut);font-weight:600">ITEM</div>
+        <div style="font-size:0.68rem;color:var(--mut);font-weight:600">HSN</div>
+        <div style="font-size:0.68rem;color:var(--mut);font-weight:600">QTY</div>
+        <div style="font-size:0.68rem;color:var(--mut);font-weight:600">RATE</div>
+        <div></div>
+      </div>
+      <div id="irows"></div>
+    </div>
+    <button onclick="addRow()" style="width:100%;background:var(--sur);border:1px dashed var(--bdr);border-radius:8px;padding:9px;color:var(--mut);cursor:pointer;font-size:0.8rem;margin-bottom:10px;font-family:'DM Sans',sans-serif;">+ Item Add Karo</button>
+    <div class="g2">
+      <div><label>Tax Type</label>
+      <select id="itax">
+        <option value="cgst">CGST + SGST</option>
+        <option value="igst">IGST</option>
+        <option value="none">No Tax</option>
+      </select></div>
+      <div><label>Rate (%)</label><input type="number" id="itr" value="18"></div>
+    </div>
+    <button class="btn" onclick="genInv()">&#10024; Invoice Banao</button>
+  </div>
+  <div class="invp" id="invp"></div>
+  <div class="er" id="ierr"></div>
+</div>
+
+<div id="wa" class="sec">
+  <div class="card">
+    <div class="ct">&#128172; WhatsApp Message</div>
+    <div class="g2">
+      <div><label>Type</label>
+      <select id="wt">
+        <option value="payment reminder">Payment Reminder</option>
+        <option value="follow up">Follow Up</option>
+        <option value="festival greeting">Festival Greeting</option>
+        <option value="apology">Maafi / Sorry</option>
+        <option value="business proposal">Business Proposal</option>
+        <option value="meeting reminder">Meeting Reminder</option>
+        <option value="custom">Custom</option>
+      </select></div>
+      <div><label>Language</label>
+      <select id="wl">
+        <option value="Hindi">Hindi</option>
+        <option value="English">English</option>
+        <option value="Hinglish">Hinglish</option>
+      </select></div>
+    </div>
+    <label>Kisko</label><input type="text" id="wto" placeholder="Client, Boss, Friend...">
+    <label>Kya kehna hai</label>
+    <div class="fr"><textarea id="wctx" placeholder="Bolkar ya likhkar batao..."></textarea><button class="fm" onclick="fmic('wctx',this)">&#127908;</button></div>
+    <button class="btn" id="wbtn" onclick="genWA()">&#10024; Message Banao</button>
+  </div>
+  <div class="ld" id="wld"><div>Likh raha hoon...</div><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div class="res" id="wres"><div class="rh"><span class="rl">&#10003; Ready</span><button class="cp" onclick="cpText('wout',this)">Copy</button></div><div class="rt" id="wout"></div></div>
+  <div class="er" id="werr"></div>
+</div>
+
+<div id="yt" class="sec">
+  <div class="card">
+    <div class="ct">&#128250; YouTube Tools</div>
+    <label>Kya chahiye?</label>
+    <select id="ytl">
+      <option value="script">Script (60 sec Short)</option>
+      <option value="title">Title + Description</option>
+      <option value="ideas">10 Video Ideas</option>
+      <option value="hook">Catchy Hook</option>
+      <option value="tags">Hashtags + Tags</option>
+    </select>
+    <label>Channel / Topic</label>
+    <div class="fr"><textarea id="ytctx" placeholder="Jaise: ThePastCluesHindi — History Mystery channel, NASA secrets pe video..."></textarea><button class="fm" onclick="fmic('ytctx',this)">&#127908;</button></div>
+    <label>Language</label>
+    <select id="ytln">
+      <option value="Hindi">Hindi</option>
+      <option value="Hinglish">Hinglish</option>
+      <option value="English">English</option>
+    </select>
+    <button class="btn" id="ytbtn" onclick="genYT()">&#10024; Generate Karo</button>
+  </div>
+  <div class="ld" id="ytld"><div>Bana raha hoon...</div><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div class="res" id="ytres"><div class="rh"><span class="rl">&#10003; Ready</span><button class="cp" onclick="cpText('ytout',this)">Copy</button></div><div class="rt" id="ytout"></div></div>
+  <div class="er" id="yterr"></div>
+</div>
+
+<div id="res" class="sec">
+  <div class="card">
+    <div class="ct">&#128196; Resume + Job Tools</div>
+    <label>Kya chahiye?</label>
+    <select id="rsl">
+      <option value="resume">ATS Resume</option>
+      <option value="cover">Cover Letter</option>
+      <option value="linkedin">LinkedIn Bio</option>
+      <option value="summary">Professional Summary</option>
+      <option value="interview">Interview Q&amp;A</option>
+    </select>
+    <label>Apni Details</label>
+    <div class="fr"><textarea id="rsctx" placeholder="EEE Engineer 2016, Java Full Stack, gap COVID se, ab job dhundh raha hoon..."></textarea><button class="fm" onclick="fmic('rsctx',this)">&#127908;</button></div>
+    <label>Job Role</label><input type="text" id="rsrl" placeholder="Java Developer, Digital Marketing">
+    <button class="btn" id="rsbtn" onclick="genRes()">&#10024; Banao</button>
+  </div>
+  <div class="ld" id="rsld"><div>Bana raha hoon...</div><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div class="res" id="rsres"><div class="rh"><span class="rl">&#10003; Ready</span><button class="cp" onclick="cpText('rsout',this)">Copy</button></div><div class="rt" id="rsout"></div></div>
+  <div class="er" id="rserr"></div>
+</div>
+
+<div id="trk" class="sec">
+  <div class="card">
+    <div class="ct">&#128202; Client Tracker</div>
+    <div class="g2">
+      <div><label>Client Naam</label><input type="text" id="tcn" placeholder="Sharma Ji"></div>
+      <div><label>Amount (Rs.)</label><input type="number" id="tam" placeholder="5000"></div>
+    </div>
+    <div class="g2">
+      <div><label>Kaam</label><input type="text" id="twk" placeholder="Web Design"></div>
+      <div><label>Status</label>
+      <select id="tst">
+        <option value="p">Pending</option>
+        <option value="ok">Paid</option>
+        <option value="d">Overdue</option>
+      </select></div>
+    </div>
+    <button class="btn" onclick="addClient()">+ Add Karo</button>
+  </div>
+  <div class="card" id="tsum" style="display:none">
+    <div class="ct">&#128176; Summary</div>
+    <div class="g2">
+      <div style="text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--grn)" id="tpaid">Rs.0</div><div style="font-size:0.72rem;color:var(--mut)">Received</div></div>
+      <div style="text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--gold)" id="tpend">Rs.0</div><div style="font-size:0.72rem;color:var(--mut)">Pending</div></div>
+    </div>
+  </div>
+  <div id="tlist"></div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<button onclick="doShowKey()" style="position:fixed;top:14px;right:14px;background:var(--card);border:1px solid var(--bdr);color:var(--mut);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:0.9rem;z-index:200;">&#9881;</button>
+
+<script>
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+var gRec=null, gOn=false, gTxt='', fRec=null;
+var icount=0, ilogo='';
+var hist=[];
+var clients=[];
+
+function getK(){ return localStorage.getItem('sakey')||''; }
+function doShowKey(){ document.getElementById('ko').classList.add('on'); }
+function doHideKey(){ document.getElementById('ko').classList.remove('on'); }
+function doSaveKey(){
+  var k=document.getElementById('kiv').value.trim();
+  if(!k||k.length<10){ showToast('Key sahi nahi hai!'); return; }
+  localStorage.setItem('sakey',k);
+  doHideKey();
+  showToast('Key save! Sab kaam karega!');
+}
+function checkKey(){ if(!getK()) doShowKey(); }
+
+function callAPI(msgs, sys, cb){
+  var k=getK();
+  if(!k){ doShowKey(); cb(null,'Key nahi hai'); return; }
+  var allMsgs=[];
+  if(sys) allMsgs.push({role:'system',content:sys});
+  msgs.forEach(function(m){ allMsgs.push(m); });
+  var url='https://openrouter.ai/api/v1/chat/completions';
+  var body={model:'mistralai/mistral-small-3.1-24b-instruct:free',messages:allMsgs,max_tokens:1000};
+  var reqBody=JSON.stringify(body);
+  var headers=new Headers();
+  headers.append('Content-Type','application/json');
+  headers.append('Authorization','Bearer '+k);
+  fetch(url,{method:'POST',headers:headers,body:reqBody})
+  .then(function(r){ return r.json().then(function(d){ return {ok:r.ok,d:d}; }); })
+  .then(function(res){
+    if(!res.ok){
+      if(res.d.error&&(res.d.error.code===401||res.d.error.message==='No auth credentials found')){ localStorage.removeItem('sakey'); doShowKey(); cb(null,'Key galat hai — dobara daalo'); return; }
+      cb(null, res.d.error?res.d.error.message:'API Error'); return;
+    }
+    try{ var txt=res.d.choices[0].message.content||''; cb(txt,null); }
+    catch(e){ cb(null,'Response parse error'); }
+  }).catch(function(e){ cb(null,e.message||'Network error — internet check karo'); });
+}
+
+function go(id,btn){
+  document.querySelectorAll('.sec').forEach(function(s){ s.classList.remove('on'); });
+  document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+}
+
+function setVS(msg,cls){ var el=document.getElementById('vs'); el.textContent=msg; el.className='vstatus '+(cls||''); }
+
+function toggleMic(){
+  if(!SR){ setVS('Chrome use karo','er'); return; }
+  if(gOn){ if(gRec) gRec.stop(); return; }
+  gRec=new SR(); gRec.lang='hi-IN'; gRec.interimResults=true;
+  gOn=true;
+  var mic=document.getElementById('gmic');
+  mic.classList.add('on'); mic.textContent='stop';
+  document.getElementById('vtxt').textContent='Sun raha hoon...';
+  document.getElementById('vtxt').classList.remove('on');
+  setVS('Bol rahe ho...','on');
+  gRec.onresult=function(e){ var t=''; for(var i=e.resultIndex;i<e.results.length;i++) t+=e.results[i][0].transcript; gTxt=t; document.getElementById('vtxt').textContent=t; document.getElementById('vtxt').classList.add('on'); };
+  gRec.onend=function(){ gOn=false; mic.classList.remove('on'); mic.textContent='mic'; if(gTxt){ document.getElementById('vgo').disabled=false; setVS('"Karo" dabao!','on'); } else setVS('Kuch nahi suna','er'); };
+  gRec.onerror=function(){ gOn=false; mic.classList.remove('on'); mic.textContent='mic'; setVS('Error','er'); };
+  gRec.start();
+}
+
+function runVoice(){
+  if(!gTxt) return;
+  document.getElementById('vgo').disabled=true;
+  setVS('Samajh raha hoon...','on');
+  callAPI([{role:'user',content:'User ne kaha: "'+gTxt+'". Ek word mein batao kaunsa tab open karo: chat, email, invoice, wa, yt, res, trk'}],'',function(r,e){
+    if(r){
+      var tab=r.trim().toLowerCase().split(' ')[0];
+      var valid=['chat','email','invoice','wa','yt','res','trk'];
+      if(valid.indexOf(tab)<0) tab='chat';
+      var tabs=document.querySelectorAll('.nb');
+      var idx={'chat':0,'email':1,'invoice':2,'wa':3,'yt':4,'res':5,'trk':6};
+      go(tab, tabs[idx[tab]||0]);
+      if(tab==='chat'){ document.getElementById('ci').value=gTxt; sendMsg(); }
+      showToast('Tab open!');
+      setVS('Done!','on');
+    } else { setVS('Seedha tab select karo','er'); }
+    document.getElementById('vgo').disabled=false;
+  });
+}
+
+function fmic(id,btn){
+  if(!SR){ showToast('Chrome use karo'); return; }
+  if(fRec){ fRec.stop(); fRec=null; document.querySelectorAll('.fm').forEach(function(b){ b.classList.remove('on'); b.textContent='mic'; }); return; }
+  fRec=new SR(); fRec.lang='hi-IN'; fRec.interimResults=false;
+  btn.classList.add('on'); btn.textContent='stop';
+  var field=document.getElementById(id), orig=field.value;
+  fRec.onresult=function(e){ var t=''; for(var i=0;i<e.results.length;i++) t+=e.results[i][0].transcript; field.value=(orig?(orig+' '):'')+t; };
+  fRec.onend=function(){ btn.classList.remove('on'); btn.textContent='mic'; fRec=null; };
+  fRec.onerror=function(){ btn.classList.remove('on'); btn.textContent='mic'; fRec=null; };
+  fRec.start();
+}
+
+function sendMsg(){
+  var inp=document.getElementById('ci');
+  var msg=inp.value.trim();
+  if(!msg) return;
+  inp.value='';
+  addMsg('u',msg);
+  hist.push({role:'user',content:msg});
+  addMsg('ai','...',true);
+  callAPI(hist,'Tum helpful Hindi AI assistant ho. Hinglish ya Hindi mein baat karo. Friendly raho. Short jawab do.',function(r,e){
+    if(r){ hist.push({role:'assistant',content:r}); updMsg(r); }
+    else updMsg('Error: '+(e||'Unknown'));
+  });
+}
+
+function addMsg(type,txt,tmp){
+  var box=document.getElementById('cb');
+  var d=document.createElement('div');
+  d.className='msg '+(type==='ai'?'ai':'u');
+  d.innerHTML='<div class="av">'+(type==='ai'?'AI':'Me')+'</div><div class="mb">'+txt+'</div>';
+  if(tmp) d.id='tmsg';
+  box.appendChild(d);
+  box.scrollTop=box.scrollHeight;
+}
+
+function updMsg(txt){ var t=document.getElementById('tmsg'); if(t){ t.querySelector('.mb').textContent=txt; t.id=''; } document.getElementById('cb').scrollTop=9999; }
+
+function runGen(ldId,resId,outId,errId,btnId,prompt,sys){
+  document.getElementById(ldId).classList.add('on');
+  document.getElementById(resId).classList.remove('on');
+  document.getElementById(errId).textContent='';
+  if(btnId) document.getElementById(btnId).disabled=true;
+  callAPI([{role:'user',content:prompt}], sys||'', function(r,e){
+    if(r){ document.getElementById(outId).textContent=r; document.getElementById(resId).classList.add('on'); }
+    else document.getElementById(errId).textContent='Error: '+(e||'Unknown');
+    document.getElementById(ldId).classList.remove('on');
+    if(btnId) document.getElementById(btnId).disabled=false;
+  });
+}
+
+function genEmail(){
+  var type=document.getElementById('et').value;
+  var sn=document.getElementById('esn').value||'Main';
+  var rn=document.getElementById('ern').value||'Concerned Person';
+  var ctx=document.getElementById('ectx').value||'General';
+  var tone=document.getElementById('eton').value;
+  runGen('eld','eres','eout','eerr','ebtn','Write a '+tone+' '+type+' email in English.\nFrom: '+sn+'\nTo: '+rn+'\nContext: '+ctx+'\nWrite complete email with Subject, body, signature. Only the email.','');
+}
+
+function genWA(){
+  var type=document.getElementById('wt').value;
+  var to=document.getElementById('wto').value||'person';
+  var ctx=document.getElementById('wctx').value||'General';
+  var lang=document.getElementById('wl').value;
+  runGen('wld','wres','wout','werr','wbtn','Write a WhatsApp message in '+lang+'.\nType: '+type+', To: '+to+'\nContext: '+ctx+'\nShort, natural, with emojis. Only the message.','');
+}
+
+function genYT(){
+  var tool=document.getElementById('ytl').value;
+  var ctx=document.getElementById('ytctx').value||'Hindi Mystery History YouTube channel';
+  var lang=document.getElementById('ytln').value;
+  var pm={script:'Write a 60-second YouTube Shorts script in '+lang+' for: '+ctx,title:'Generate 5 catchy YouTube titles + descriptions in '+lang+' for: '+ctx,ideas:'Give 10 viral YouTube video ideas in '+lang+' for: '+ctx,hook:'Write 5 powerful hook lines in '+lang+' for: '+ctx,tags:'Generate 20 hashtags and 10 SEO tags in '+lang+' for: '+ctx};
+  runGen('ytld','ytres','ytout','yterr','ytbtn',pm[tool],'');
+}
+
+function genRes(){
+  var tool=document.getElementById('rsl').value;
+  var ctx=document.getElementById('rsctx').value||'Engineering graduate';
+  var role=document.getElementById('rsrl').value||'Software Developer';
+  var pm={resume:'Create ATS resume for: '+role+'\nBackground: '+ctx,cover:'Write cover letter for: '+role+'\nBackground: '+ctx,linkedin:'Write LinkedIn About for: '+role+'\nBackground: '+ctx,summary:'Write 3-line professional summary for: '+role+'\nBackground: '+ctx,interview:'Generate 10 interview Q&A for: '+role+'\nBackground: '+ctx};
+  runGen('rsld','rsres','rsout','rserr','rsbtn',pm[tool],'');
+}
+
+function saveCo(){
+  var co={co:document.getElementById('ico').value,sp:document.getElementById('isp').value,gst:document.getElementById('igst').value,ph:document.getElementById('iph').value,em:document.getElementById('iem').value,ad:document.getElementById('iad').value,tc:document.getElementById('itc').value,lg:ilogo};
+  localStorage.setItem('invco',JSON.stringify(co));
+  showToast('Company save ho gayi!');
+}
+
+function loadCo(){
+  try{
+    var co=JSON.parse(localStorage.getItem('invco')||'{}');
+    if(co.co) document.getElementById('ico').value=co.co;
+    if(co.sp) document.getElementById('isp').value=co.sp;
+    if(co.gst) document.getElementById('igst').value=co.gst;
+    if(co.ph) document.getElementById('iph').value=co.ph;
+    if(co.em) document.getElementById('iem').value=co.em;
+    if(co.ad) document.getElementById('iad').value=co.ad;
+    if(co.tc) document.getElementById('itc').value=co.tc;
+    if(co.lg) ilogo=co.lg;
+  }catch(e){}
+}
+
+function addRow(){
+  icount++;
+  var id=icount;
+  var row=document.createElement('div');
+  row.id='ir'+id;
+  row.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr 30px;gap:5px;margin-bottom:5px;min-width:300px;';
+  row.innerHTML='<input type="text" placeholder="Item naam" style="margin-bottom:0;font-size:0.8rem;padding:8px" id="id'+id+'">'
+    +'<input type="text" placeholder="HSN" style="margin-bottom:0;font-size:0.8rem;padding:8px" id="ih'+id+'">'
+    +'<input type="number" placeholder="Qty" style="margin-bottom:0;font-size:0.8rem;padding:8px" id="iq'+id+'">'
+    +'<input type="number" placeholder="Rate" style="margin-bottom:0;font-size:0.8rem;padding:8px" id="irr'+id+'">'
+    +'<button onclick="rmRow('+id+')" style="background:rgba(240,64,96,0.1);border:1px solid var(--red);border-radius:6px;color:var(--red);cursor:pointer;font-size:0.75rem;">X</button>';
+  document.getElementById('irows').appendChild(row);
+}
+
+function rmRow(id){ var el=document.getElementById('ir'+id); if(el) el.remove(); }
+
+function genInv(){
+  var co={};
+  try{ co=JSON.parse(localStorage.getItem('invco')||'{}'); }catch(e){}
+  var company=document.getElementById('ico').value||co.co||'My Company';
+  var sp=document.getElementById('isp').value||co.sp||'';
+  var mygst=document.getElementById('igst').value||co.gst||'';
+  var ph=document.getElementById('iph').value||co.ph||'';
+  var em=document.getElementById('iem').value||co.em||'';
+  var ad=document.getElementById('iad').value||co.ad||'';
+  var tc=document.getElementById('itc').value||co.tc||'';
+  var lg=ilogo||co.lg||'';
+  var ino=document.getElementById('ino').value||'INV-001';
+  var dt=document.getElementById('idt').value||new Date().toLocaleDateString('en-IN');
+  var po=document.getElementById('ipo').value||'';
+  var cn=document.getElementById('icn').value||'Client';
+  var ca=document.getElementById('ica').value||'';
+  var cg=document.getElementById('icg').value||'';
+  var taxType=document.getElementById('itax').value;
+  var taxRate=parseFloat(document.getElementById('itr').value)||18;
+
+  var rows=[],sub=0;
+  for(var i=1;i<=icount;i++){
+    var desc=document.getElementById('id'+i);
+    if(!desc||!desc.value.trim()) continue;
+    var hsn=(document.getElementById('ih'+i)||{}).value||'';
+    var qty=parseFloat((document.getElementById('iq'+i)||{}).value)||0;
+    var rate=parseFloat((document.getElementById('irr'+i)||{}).value)||0;
+    var amt=qty*rate; sub+=amt;
+    rows.push({d:desc.value,h:hsn,q:qty,r:rate,a:amt});
+  }
+  if(!rows.length){ document.getElementById('ierr').textContent='Kam se kam ek item daalo!'; return; }
+  document.getElementById('ierr').textContent='';
+
+  var cgst=0,sgst=0,igst=0,txHtml='';
+  if(taxType==='cgst'){ cgst=Math.round(sub*(taxRate/2)/100); sgst=cgst; txHtml='<tr><td colspan="5" style="text-align:right;padding:5px 8px;font-weight:600">CGST ('+taxRate/2+'%)</td><td style="text-align:right;padding:5px 8px">Rs.'+cgst.toLocaleString('en-IN')+'</td></tr><tr><td colspan="5" style="text-align:right;padding:5px 8px;font-weight:600">SGST ('+taxRate/2+'%)</td><td style="text-align:right;padding:5px 8px">Rs.'+sgst.toLocaleString('en-IN')+'</td></tr><tr><td colspan="5" style="text-align:right;padding:5px 8px;color:#aaa">IGST</td><td style="text-align:right;padding:5px 8px;color:#aaa">-</td></tr>'; }
+  else if(taxType==='igst'){ igst=Math.round(sub*taxRate/100); txHtml='<tr><td colspan="5" style="text-align:right;padding:5px 8px;color:#aaa">CGST</td><td style="text-align:right;padding:5px 8px;color:#aaa">-</td></tr><tr><td colspan="5" style="text-align:right;padding:5px 8px;color:#aaa">SGST</td><td style="text-align:right;padding:5px 8px;color:#aaa">-</td></tr><tr><td colspan="5" style="text-align:right;padding:5px 8px;font-weight:600">IGST ('+taxRate+'%)</td><td style="text-align:right;padding:5px 8px">Rs.'+igst.toLocaleString('en-IN')+'</td></tr>'; }
+  var grand=sub+cgst+sgst+igst;
+
+  var irows=rows.map(function(r,i){ return '<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center">'+(i+1)+'</td><td style="padding:6px 8px;border-bottom:1px solid #eee;font-weight:500">'+r.d+'</td><td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center">'+(r.h||'-')+'</td><td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center">'+r.q+'</td><td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right">'+r.r.toLocaleString('en-IN')+'</td><td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:600">Rs.'+r.a.toLocaleString('en-IN')+'</td></tr>'; }).join('');
+  var empRows=''; for(var x=rows.length;x<5;x++) empRows+='<tr><td colspan="6" style="padding:10px 8px;border-bottom:1px solid #eee">&nbsp;</td></tr>';
+  var tcHtml=tc?tc.split('\n').map(function(t){ return '<div>'+t+'</div>'; }).join(''):'';
+
+  var html='<div style="font-family:Arial,sans-serif;color:#111;font-size:12px;">'
+    +'<div style="background:#1a237e;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">'
+    +(lg?'<img src="'+lg+'" style="height:44px;width:44px;object-fit:contain;background:#fff;border-radius:4px;padding:2px;margin-right:10px;">':'')
+    +'<div style="flex:1"><div style="font-size:15px;font-weight:800">'+company+'</div>'+(sp?'<div style="font-size:10px;opacity:0.85;margin-top:1px">'+sp+'</div>':'')+'</div>'
+    +'<div style="text-align:right;font-size:10px">'+(ph?'<div>'+ph+'</div>':'')+(em?'<div>'+em+'</div>':'')+'</div></div>'
+    +'<div style="display:flex;border:1px solid #ccc;border-top:none">'
+    +'<div style="flex:1;padding:8px 12px;border-right:1px solid #ccc;font-size:10px">'+(ad?'<div style="white-space:pre-wrap;word-break:break-word">'+ad.replace(/\n/g,'<br>')+'</div>':'')+(mygst?'<div style="margin-top:4px;font-weight:600"><b>GST No:</b> '+mygst+'</div>':'')+'</div>'
+    +'<div style="padding:8px 12px;text-align:center;font-size:12px;font-weight:800;letter-spacing:1px">TAX INVOICE</div></div>'
+    +'<div style="display:flex;border:1px solid #ccc;border-top:none">'
+    +'<div style="flex:1;padding:8px 12px;border-right:1px solid #ccc;font-size:11px"><b>Bill To:</b> <b>'+cn+'</b>'+(ca?'<br><span style="font-size:10px;color:#444">'+ca+'</span>':'')+(cg?'<br><span style="font-size:10px"><b>GST:</b> '+cg+'</span>':'')+'</div>'
+    +'<div style="padding:8px 12px;font-size:10px;min-width:155px">'+(ino?'<div><b>Invoice No:</b> '+ino+'</div>':'')+(po?'<div><b>PO No:</b> '+po+'</div>':'')+'<div><b>Date:</b> '+dt+'</div></div></div>'
+    +'<table style="width:100%;border-collapse:collapse">'
+    +'<thead><tr style="background:#1a237e;color:#fff"><th style="padding:6px 8px;font-size:10px;width:28px">S.No</th><th style="padding:6px 8px;font-size:10px;text-align:left">Description</th><th style="padding:6px 8px;font-size:10px;width:55px">HSN</th><th style="padding:6px 8px;font-size:10px;width:40px">Qty</th><th style="padding:6px 8px;font-size:10px;width:60px;text-align:right">Rate</th><th style="padding:6px 8px;font-size:10px;width:70px;text-align:right">Amount</th></tr></thead>'
+    +'<tbody>'+irows+empRows+'</tbody>'
+    +'<tfoot><tr style="background:#f5f5f5"><td colspan="5" style="text-align:right;font-weight:700;padding:7px 8px;border-top:2px solid #111">TOTAL AMOUNT</td><td style="text-align:right;font-weight:700;padding:7px 8px;border-top:2px solid #111">Rs.'+sub.toLocaleString('en-IN')+'</td></tr>'+txHtml+'<tr style="background:#1a237e;color:#fff"><td colspan="5" style="text-align:right;font-weight:800;padding:8px;font-size:13px">GRAND TOTAL</td><td style="text-align:right;font-weight:800;padding:8px;font-size:13px">Rs.'+grand.toLocaleString('en-IN')+'</td></tr></tfoot></table>'
+    +'<div style="border:1px solid #ccc;border-top:none"><div style="padding:10px 12px;font-size:10px;border-bottom:1px solid #ddd"><b>Terms &amp; Conditions:</b><div style="margin-top:5px;white-space:pre-wrap;word-break:break-word;line-height:1.6">'+tc+'</div></div><div style="padding:10px 12px;text-align:right;font-size:10px"><div style="margin-bottom:45px">FOR '+company.toUpperCase()+'</div><div style="border-top:1px solid #111;padding-top:3px;display:inline-block;min-width:150px;text-align:center">Authorised Signatory</div></div></div>'
+    +'<button onclick="printInv()" style="display:block;margin:12px auto 0;background:#1a237e;color:#fff;border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-size:12px;font-weight:600">Print / Save PDF</button>'
+    +'</div>';
+
+  document.getElementById('invp').innerHTML=html;
+  document.getElementById('invp').classList.add('on');
+  document.getElementById('invp').scrollIntoView({behavior:'smooth'});
+}
+
+function printInv(){
+  var c=document.getElementById('invp').innerHTML;
+  var w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>Invoice</title><meta charset="UTF-8"><style>'+
+    '@page{size:A4 portrait;margin:10mm;}'+
+    'html,body{margin:0;padding:0;width:210mm;font-family:Arial,sans-serif;font-size:11px;}'+
+    'button{display:none!important}'+
+    'table{width:100%;border-collapse:collapse;page-break-inside:auto;}'+
+    'tr{page-break-inside:avoid;page-break-after:auto;}'+
+    'thead{display:table-header-group;}'+
+    'tfoot{display:table-footer-group;}'+
+    'div{word-wrap:break-word;word-break:break-word;}'+
+    'img{max-width:100%;}'+
+    '</style></head><body>'+c+'</body></html>');
+  w.document.close();
+  setTimeout(function(){ w.print(); },800);
+}
+
+function addClient(){
+  var name=document.getElementById('tcn').value.trim();
+  if(!name){ showToast('Naam daalo!'); return; }
+  var amt=parseFloat(document.getElementById('tam').value)||0;
+  var wk=document.getElementById('twk').value.trim();
+  var st=document.getElementById('tst').value;
+  clients.push({id:Date.now(),name:name,amt:amt,wk:wk,st:st,dt:new Date().toLocaleDateString('en-IN')});
+  localStorage.setItem('clients',JSON.stringify(clients));
+  document.getElementById('tcn').value=''; document.getElementById('tam').value=''; document.getElementById('twk').value='';
+  renderTrk(); showToast('Client add ho gaya!');
+}
+
+function delClient(id){
+  clients=clients.filter(function(c){ return c.id!==id; });
+  localStorage.setItem('clients',JSON.stringify(clients));
+  renderTrk();
+}
+
+function renderTrk(){
+  var list=document.getElementById('tlist');
+  var sum=document.getElementById('tsum');
+  if(!clients.length){ list.innerHTML='<div style="text-align:center;color:var(--mut);padding:20px;font-size:0.82rem">Abhi koi client nahi</div>'; sum.style.display='none'; return; }
+  sum.style.display='block';
+  var paid=0,pend=0;
+  clients.forEach(function(c){ if(c.st==='ok') paid+=c.amt; else pend+=c.amt; });
+  document.getElementById('tpaid').textContent='Rs.'+paid.toLocaleString('en-IN');
+  document.getElementById('tpend').textContent='Rs.'+pend.toLocaleString('en-IN');
+  list.innerHTML=clients.map(function(c){
+    var badge=c.st==='ok'?'ok':c.st==='d'?'d':'p';
+    var label=c.st==='ok'?'Paid':c.st==='d'?'Due':'Pending';
+    return '<div class="ti"><div><div class="tin">'+c.name+'</div><div class="tid">'+(c.wk||'--')+' - '+c.dt+' - Rs.'+c.amt.toLocaleString('en-IN')+'</div></div><div style="display:flex;align-items:center;gap:8px"><span class="tbdg '+badge+'">'+label+'</span><button class="td" onclick="delClient('+c.id+')">Del</button></div></div>';
+  }).join('');
+}
+
+function cpText(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(function(){ var o=btn.textContent; btn.textContent='Copied!'; setTimeout(function(){ btn.textContent=o; },2000); });
+}
+
+function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); },2500); }
+
+window.onload=function(){
+  try{ clients=JSON.parse(localStorage.getItem('clients')||'[]'); }catch(e){}
+  loadCo();
+  addRow(); addRow(); addRow();
+  document.getElementById('idt').valueAsDate=new Date();
+  renderTrk();
+  if(!SR) setVS('Voice ke liye Chrome use karo','er');
+  setTimeout(checkKey, 600);
+  document.getElementById('ilg').onchange=function(){ var file=this.files[0]; if(!file) return; var reader=new FileReader(); reader.onload=function(e){ ilogo=e.target.result; showToast('Logo ready!'); }; reader.readAsDataURL(file); };
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+};
+</script>
+</body>
+</html>
