@@ -137,6 +137,7 @@ select option{background:var(--sur);}
   <button class="nb" onclick="go('yt',this)"><span class="ic">&#128250;</span>YouTube</button>
   <button class="nb" onclick="go('res',this)"><span class="ic">&#128196;</span>Resume</button>
   <button class="nb" onclick="go('trk',this)"><span class="ic">&#128202;</span>Tracker</button>
+  <button class="nb" onclick="go('invhist',this)"><span class="ic">&#128196;</span>Inv. History</button>
 </div>
 
 <div class="main">
@@ -349,6 +350,14 @@ select option{background:var(--sur);}
     </div>
   </div>
   <div id="tlist"></div>
+</div>
+
+<div id="invhist" class="sec">
+  <div class="card">
+    <div class="ct">&#128196; Invoice History</div>
+    <div class="tip">&#128161; Sab saved invoices yahan dikhenge!</div>
+    <div id="invHistList"></div>
+  </div>
 </div>
 
 </div>
@@ -628,6 +637,7 @@ function genInv(){
   document.getElementById('invp').innerHTML=html;
   document.getElementById('invp').classList.add('on');
   document.getElementById('invp').scrollIntoView({behavior:'smooth'});
+  saveInvHistory(company, cn, ino, dt, grand, rows);
 }
 
 function printInv(){
@@ -657,13 +667,15 @@ function addClient(){
   clients.push({id:Date.now(),name:name,amt:amt,wk:wk,st:st,dt:new Date().toLocaleDateString('en-IN')});
   localStorage.setItem('clients',JSON.stringify(clients));
   document.getElementById('tcn').value=''; document.getElementById('tam').value=''; document.getElementById('twk').value='';
-  renderTrk(); showToast('Client add ho gaya!');
+  renderTrk();
+  renderInvHistory(); showToast('Client add ho gaya!');
 }
 
 function delClient(id){
   clients=clients.filter(function(c){ return c.id!==id; });
   localStorage.setItem('clients',JSON.stringify(clients));
   renderTrk();
+  renderInvHistory();
 }
 
 function renderTrk(){
@@ -688,12 +700,60 @@ function cpText(id,btn){
 
 function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); },2500); }
 
+// ===== INVOICE HISTORY =====
+var invHistory = [];
+try{ invHistory = JSON.parse(localStorage.getItem('invHistory')||'[]'); }catch(e){}
+
+function saveInvHistory(company, client, invNo, date, grand, rows){
+  var inv = {
+    id: Date.now(),
+    company: company,
+    client: client,
+    invNo: invNo,
+    date: date,
+    grand: grand,
+    items: rows.length,
+    dt: new Date().toLocaleDateString('en-IN')
+  };
+  invHistory.unshift(inv);
+  if(invHistory.length > 50) invHistory.pop();
+  localStorage.setItem('invHistory', JSON.stringify(invHistory));
+  renderInvHistory();
+}
+
+function delInvHistory(id){
+  invHistory = invHistory.filter(function(i){ return i.id !== id; });
+  localStorage.setItem('invHistory', JSON.stringify(invHistory));
+  renderInvHistory();
+}
+
+function renderInvHistory(){
+  var list = document.getElementById('invHistList');
+  if(!list) return;
+  if(!invHistory.length){
+    list.innerHTML = '<div style="text-align:center;color:var(--mut);padding:20px;font-size:0.82rem">Abhi koi invoice nahi hai</div>';
+    return;
+  }
+  list.innerHTML = invHistory.map(function(inv){
+    return '<div class="ti" style="flex-direction:column;align-items:flex-start;gap:8px">'
+      +'<div style="display:flex;justify-content:space-between;width:100%;align-items:center">'
+      +'<div>'
+      +'<div class="tin">'+inv.invNo+' — '+inv.client+'</div>'
+      +'<div class="tid">'+inv.company+' • '+inv.date+' • <b style="color:var(--grn)">Rs.'+inv.grand.toLocaleString('en-IN')+'</b> • '+inv.items+' items</div>'
+      +'</div>'
+      +'<button class="td" onclick="delInvHistory('+inv.id+')">&#128465;</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
 window.onload=function(){
   try{ clients=JSON.parse(localStorage.getItem('clients')||'[]'); }catch(e){}
   loadCo();
   addRow(); addRow(); addRow();
   document.getElementById('idt').valueAsDate=new Date();
   renderTrk();
+  renderInvHistory();
   if(!SR) setVS('Voice ke liye Chrome use karo','er');
   setTimeout(checkKey, 600);
   document.getElementById('ilg').onchange=function(){ var file=this.files[0]; if(!file) return; var reader=new FileReader(); reader.onload=function(e){ ilogo=e.target.result; showToast('Logo ready!'); }; reader.readAsDataURL(file); };

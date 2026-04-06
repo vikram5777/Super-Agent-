@@ -1,4 +1,4 @@
-const CACHE = 'super-agent-v1';
+const CACHE = 'super-agent-v2';
 const FILES = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
@@ -15,8 +15,15 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Network first - always get fresh content
 self.addEventListener('fetch', e => {
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request)
+      .then(response => {
+        const clone = response.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
